@@ -11,7 +11,7 @@ const botDetection = (req, res, next) => {
         'google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex',
         'ahrefs', 'mj12bot', 'semrush', 'dotbot', 'rogue',
         'namecheap', 'brandverity', 'monitor', 'scan', 'checker',
-        'curl', 'wget', 'python', 'java', 'libwww', 'httpclient'
+        'curl', 'wget', 'python', 'java', 'libwww','vercel', 'httpclient'
     ];
 
     const isBot = botSignatures.some(sig => userAgent.toLowerCase().includes(sig.toLowerCase()));
