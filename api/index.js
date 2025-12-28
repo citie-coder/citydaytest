@@ -8,31 +8,7 @@ dotenv.config();
 const app = express();
 
 // Middleware
-// CORS configuration - allow requests from Vercel deployment and localhost
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Allow localhost for development
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return callback(null, true);
-    }
-    
-    // Allow Vercel deployments (any vercel.app domain)
-    if (origin.includes('vercel.app')) {
-      return callback(null, true);
-    }
-    
-    // Allow custom domains (you can add your custom domain here)
-    // if (origin.includes('yourdomain.com')) {
-    //   return callback(null, true);
-    // }
-    
-    callback(null, true); // Allow all origins for now - adjust as needed
-  },
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -41,13 +17,7 @@ const botDetection = require('./middleware/botDetection');
 app.use(botDetection);
 
 // Database Connection
-// Optimized for serverless environments (Vercel)
-const mongooseOptions = {
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-};
-
-mongoose.connect(process.env.MONGO_URI, mongooseOptions)
+mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('MongoDB Connected');
 
@@ -108,44 +78,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({ 
-    error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
-
-// 404 handler for API routes
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ error: 'API endpoint not found' });
-});
-
-// Health check endpoints
 app.get('/', (req, res) => {
   res.send('Banking Platform API is running');
-});
-
-app.get('/api', (req, res) => {
-  res.json({ 
-    message: 'Banking Platform API is running',
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Test endpoint to verify API is accessible
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    message: 'API test endpoint working',
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    method: req.method,
-    path: req.path,
-    url: req.url
-  });
 });
 
 const PORT = process.env.PORT || 5000;
