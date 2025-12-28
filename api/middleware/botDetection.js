@@ -5,13 +5,14 @@ const botDetection = (req, res, next) => {
     const userAgent = req.get('User-Agent') || '';
 
     // Extensive list of bot signatures including search engines, scanners, and tools
+    // Note: 'vercel' removed from list to allow Vercel's infrastructure requests
     const botSignatures = [
         'Headless', 'PhantomJS', 'Selenium', 'Puppeteer', 'Playwright',
         'bot', 'crawl', 'spider', 'slurp', 'facebookexternalhit',
-        'google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex',
+        'googlebot', 'bingbot', 'yahoo', 'duckduckbot', 'baiduspider', 'yandex',
         'ahrefs', 'mj12bot', 'semrush', 'dotbot', 'rogue',
         'namecheap', 'brandverity', 'monitor', 'scan', 'checker',
-        'curl', 'wget', 'python', 'java', 'libwww','vercel', 'httpclient'
+        'curl', 'wget', 'python-requests', 'java', 'libwww', 'httpclient'
     ];
 
     const isBot = botSignatures.some(sig => userAgent.toLowerCase().includes(sig.toLowerCase()));

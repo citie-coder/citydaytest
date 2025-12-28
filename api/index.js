@@ -108,6 +108,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({ 
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
 // Health check endpoints
 app.get('/', (req, res) => {
   res.send('Banking Platform API is running');
@@ -117,7 +131,20 @@ app.get('/api', (req, res) => {
   res.json({ 
     message: 'Banking Platform API is running',
     status: 'ok',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test endpoint to verify API is accessible
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API test endpoint working',
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    path: req.path,
+    url: req.url
   });
 });
 
