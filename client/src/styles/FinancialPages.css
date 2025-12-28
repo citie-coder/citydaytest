@@ -1,0 +1,291 @@
+/* Financial Pages Styles */
+
+/* Hero Section */
+.fp-hero {
+    position: relative;
+    padding: 5rem 0;
+    color: white;
+    background-color: var(--citi-blue);
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+}
+
+.fp-hero-gradient {
+    background: linear-gradient(to right, var(--citi-blue), var(--citi-light-blue));
+}
+
+.fp-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.2;
+    z-index: 0;
+}
+
+.fp-hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+}
+
+.fp-hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.fp-hero-text {
+    font-size: 1.25rem;
+    color: #e5e7eb;
+    margin-bottom: 2rem;
+}
+
+.fp-btn-hero {
+    background-color: var(--citi-light-blue);
+    color: white;
+    font-weight: bold;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    display: inline-block;
+}
+
+.fp-btn-hero:hover {
+    background-color: #045a91;
+}
+
+.fp-btn-white {
+    background-color: white;
+    color: var(--citi-blue);
+    font-weight: bold;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    display: inline-block;
+}
+
+.fp-btn-white:hover {
+    background-color: #f3f4f6;
+}
+
+/* Grids */
+.fp-grid-section {
+    padding: 4rem 0;
+}
+
+.fp-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .fp-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .fp-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .fp-grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .fp-hero-title {
+        font-size: 3.5rem;
+    }
+}
+
+/* Cards */
+.fp-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.3s;
+}
+
+.fp-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.fp-card-icon {
+    color: var(--citi-light-blue);
+    margin-bottom: 1rem;
+}
+
+.fp-card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--citi-blue);
+    margin-bottom: 0.5rem;
+}
+
+.fp-card-text {
+    color: #4b5563;
+    margin-bottom: 1rem;
+}
+
+.fp-link {
+    color: var(--citi-light-blue);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: gap 0.2s;
+}
+
+.fp-link:hover {
+    gap: 0.5rem;
+}
+
+/* CTA Section */
+.fp-cta-section {
+    padding: 4rem 0;
+}
+
+.fp-cta-box {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .fp-cta-box {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 3rem;
+    }
+}
+
+.fp-cta-title {
+    font-size: 1.875rem;
+    font-weight: bold;
+    color: var(--citi-blue);
+    margin-bottom: 1rem;
+}
+
+/* Wealth Management Specific */
+.wm-hero {
+    height: 500px;
+    background-color: #001529;
+    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.wm-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.4;
+}
+
+.wm-subtitle {
+    color: var(--citi-light-blue);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.wm-title {
+    font-family: serif;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+    .wm-title {
+        font-size: 4rem;
+    }
+}
+
+.wm-card {
+    padding: 2.5rem;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s;
+}
+
+.wm-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.wm-icon-box {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-color: #f0f7fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--citi-blue);
+    margin-bottom: 1.5rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.wm-card:hover .wm-icon-box {
+    background-color: var(--citi-blue);
+    color: white;
+}
+
+.wm-form-section {
+    background-color: var(--citi-blue);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .wm-form-section {
+        flex-direction: row;
+    }
+}
+
+.wm-form-content {
+    padding: 3rem;
+    color: white;
+    flex: 1;
+}
+
+.wm-form-box {
+    background: white;
+    padding: 3rem;
+    flex: 1;
+}
+
+.wm-step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.wm-step-num {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}

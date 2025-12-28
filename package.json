@@ -1,0 +1,12 @@
+{
+  "name": "platform-demo",
+  "version": "1.0.0",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../api && npm install",
+    "build": "cd client && npm install && npm run build",
+    "dev": "echo 'Run client and api separately for now'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
