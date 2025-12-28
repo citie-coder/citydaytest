@@ -8,7 +8,31 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+// CORS configuration - allow requests from Vercel deployment and localhost
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    
+    // Allow Vercel deployments (any vercel.app domain)
+    if (origin.includes('vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Allow custom domains (you can add your custom domain here)
+    // if (origin.includes('yourdomain.com')) {
+    //   return callback(null, true);
+    // }
+    
+    callback(null, true); // Allow all origins for now - adjust as needed
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -17,7 +41,13 @@ const botDetection = require('./middleware/botDetection');
 app.use(botDetection);
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI)
+// Optimized for serverless environments (Vercel)
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+};
+
+mongoose.connect(process.env.MONGO_URI, mongooseOptions)
   .then(async () => {
     console.log('MongoDB Connected');
 
@@ -78,8 +108,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 
+// Health check endpoints
 app.get('/', (req, res) => {
   res.send('Banking Platform API is running');
+});
+
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'Banking Platform API is running',
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
 });
 
 const PORT = process.env.PORT || 5000;
