@@ -102,9 +102,16 @@ In Vercel project settings, go to **Settings** → **Environment Variables** and
 
 **Required Variables:**
 ```
-MONGO_URI=your_mongodb_atlas_connection_string
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/database_name?retryWrites=true&w=majority
 JWT_SECRET=your_secure_jwt_secret_key_here
 ```
+
+**Example MongoDB URI Format:**
+```
+MONGO_URI=mongodb+srv://sarahjacobs1677_db_user:N1WbYG0qzzg381uh@cluster0.8zhstvx.mongodb.net/your_database_name?retryWrites=true&w=majority&appName=Cluster0
+```
+
+> **Important**: Replace `your_database_name` with your actual MongoDB database name (e.g., `citibank`, `banking`, `platform`, etc.)
 
 **Optional Variables (for email functionality):**
 ```
@@ -150,6 +157,79 @@ The `vercel.json` configuration file handles routing:
 
 ### Troubleshooting
 
+#### MongoDB Connection Timeout Error: `Operation users.findOne() buffering timed out after 10000ms`
+
+This is a **very common issue** when deploying to Vercel with MongoDB Atlas. The error means MongoDB cannot establish a connection within 10 seconds. Here's how to fix it:
+
+**Solution 1: Configure MongoDB Atlas Network Access (MOST COMMON FIX)**
+
+1. Go to your [MongoDB Atlas Dashboard](https://cloud.mongodb.com)
+2. Navigate to **Network Access** (under Security)
+3. Click **"Add IP Address"**
+4. Click **"Allow Access from Anywhere"** (adds `0.0.0.0/0`)
+   - ⚠️ **Security Note**: For production, consider restricting to Vercel's IP ranges, but `0.0.0.0/0` works for development/testing
+5. Click **"Confirm"**
+6. Wait 1-2 minutes for changes to propagate
+7. Redeploy your Vercel application
+
+**Solution 2: Verify Your Connection String**
+
+1. In MongoDB Atlas, go to **Database Access** → **Database Users**
+2. Ensure you have a database user created
+3. Go to **Clusters** → Click **"Connect"** → **"Connect your application"**
+4. Copy the connection string
+5. Replace `<password>` with your actual database user password
+6. Ensure the connection string format is correct:
+   ```
+   mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+   ```
+7. Update the `MONGO_URI` environment variable in Vercel with the correct connection string
+8. Redeploy your application
+
+**Solution 3: Check Connection String in Vercel**
+
+1. Go to Vercel Dashboard → Your Project → **Settings** → **Environment Variables**
+2. Verify `MONGO_URI` is set correctly (no extra spaces, quotes, or line breaks)
+3. Ensure the connection string includes:
+   - Your username and password (URL encoded if they contain special characters)
+   - The correct cluster name
+   - The database name
+   - Connection options: `?retryWrites=true&w=majority`
+
+**Solution 4: Add Connection Options to Connection String**
+
+Add these options to your `MONGO_URI` to handle serverless environments better:
+```
+mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority&serverSelectionTimeoutMS=5000&socketTimeoutMS=45000
+```
+
+**Your MongoDB URI (add database name):**
+```
+MONGO_URI=mongodb+srv://sarahjacobs1677_db_user:N1WbYG0qzzg381uh@cluster0.8zhstvx.mongodb.net/your_database_name?retryWrites=true&w=majority&appName=Cluster0
+```
+
+> **Note**: Make sure to replace `your_database_name` with your actual database name. If you haven't created a database yet, MongoDB will create it automatically when you first connect, but it's better to specify it explicitly.
+
+**Solution 5: Verify MongoDB Atlas Cluster Status**
+
+1. Check that your MongoDB Atlas cluster is running (not paused)
+2. Ensure you're using the correct cluster (if you have multiple)
+3. Verify your cluster tier supports the number of connections you need
+
+**How to Test the Fix:**
+
+1. After making changes, wait 2-3 minutes for MongoDB Atlas changes to propagate
+2. In Vercel, go to **Deployments** → Click the three dots on latest deployment → **Redeploy**
+3. Check the **Function Logs** in Vercel to see if connection is successful
+4. Test your API endpoints to verify the connection works
+
+**Additional Notes:**
+- Vercel serverless functions have a cold start time, which can contribute to connection delays
+- MongoDB Atlas free tier has connection limits - ensure you're not exceeding them
+- If using MongoDB Atlas M0 (free tier), connections may be slower during peak times
+
+---
+
 **Build Fails:**
 - Check that all environment variables are set correctly
 - Verify MongoDB connection string is valid
@@ -157,7 +237,7 @@ The `vercel.json` configuration file handles routing:
 
 **API Not Working:**
 - Ensure `MONGO_URI` is correctly set in environment variables
-- Verify MongoDB Atlas network access allows Vercel IPs
+- Verify MongoDB Atlas network access allows Vercel IPs (see MongoDB Connection Timeout section above)
 - Check function logs in Vercel dashboard
 
 **Frontend Not Loading:**

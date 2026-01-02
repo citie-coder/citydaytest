@@ -1,30 +1,114 @@
 /**
- * Middleware to detect and block bots based on User-Agent
+ * Anti-automation middleware that blocks automated traffic, including search bots.
  */
-const botDetection = (req, res, next) => {
-    const userAgent = req.get('User-Agent') || '';
 
-    // Extensive list of bot signatures including search engines, scanners, and tools
-    const botSignatures = [
-        'Headless', 'PhantomJS', 'Selenium', 'Puppeteer', 'Playwright',
-        'bot', 'crawl', 'spider', 'slurp', 'facebookexternalhit',
-        'google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'yandex',
-        'ahrefs', 'mj12bot', 'semrush', 'dotbot', 'rogue',
-        'namecheap', 'brandverity', 'monitor', 'scan', 'checker',
-        'curl', 'wget', 'python', 'java', 'libwww', 'httpclient'
-    ];
+const SUSPICIOUS_SIGNATURES = [
+    'headless',
+    'phantomjs',
+    'selenium',
+    'puppeteer',
+    'playwright',
+    'scrapy',
+    'googlebot',
+    'bingbot',
+    'duckduckbot',
+    'baiduspider',
+    'yandexbot',
+    'facebookexternalhit',
+    'slurp',
+    'applebot',
+    'httpclient',
+    'libwww',
+    'wget',
+    'curl',
+    'python-requests',
+    'postmanruntime',
+    'axios',
+    'java/',
+    'go-http-client',
+    'httpunit'
+];
 
-    const isBot = botSignatures.some(sig => userAgent.toLowerCase().includes(sig.toLowerCase()));
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 120;
+const requestBuckets = new Map();
 
-    // Always set anti-indexing headers
-    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+const isSuspiciousUserAgent = userAgent =>
+    SUSPICIOUS_SIGNATURES.some(sig => userAgent.includes(sig));
 
-    if (isBot) {
-        console.log(`Bot blocked: ${userAgent}`);
-        // Return 404 Not Found to mask the site's existence
-        return res.status(404).send('Not Found');
+const hasSuspiciousHeaders = req => {
+    const acceptLanguage = req.get('Accept-Language');
+    const accept = req.get('Accept');
+    const secFetchSite = req.get('Sec-Fetch-Site');
+
+    let score = 0;
+    if (!accept || accept === '*/*') score += 1;
+    if (!acceptLanguage) score += 1;
+    if (secFetchSite === 'none' || secFetchSite === 'cross-site') score += 1;
+
+    return score >= 2;
+};
+
+const isLikelyModernBrowser = (req, userAgent) => {
+    if (!userAgent) return false;
+    const secChUa = req.get('sec-ch-ua');
+    const upgradeInsecure = req.get('upgrade-insecure-requests');
+    const chromeLike = userAgent.includes('chrome/') || userAgent.includes('safari/') || userAgent.includes('firefox/');
+    return chromeLike && (secChUa || upgradeInsecure);
+};
+
+const isRateLimited = ip => {
+    if (!ip) return false;
+    const now = Date.now();
+    const bucket = requestBuckets.get(ip);
+
+    if (!bucket || now - bucket.start > RATE_LIMIT_WINDOW_MS) {
+        requestBuckets.set(ip, { start: now, count: 1 });
+        return false;
     }
 
+    bucket.count += 1;
+    requestBuckets.set(ip, bucket);
+    return bucket.count > RATE_LIMIT_MAX_REQUESTS;
+};
+
+const botDetection = (req, res, next) => {
+    const userAgent = (req.get('User-Agent') || '').toLowerCase();
+    const ip = req.ip || req.connection?.remoteAddress;
+
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+
+    if (!userAgent) {
+        req.botShield = { automationLikely: true, reason: 'missing-user-agent' };
+    }
+
+    const suspiciousUA = userAgent && isSuspiciousUserAgent(userAgent);
+    const suspiciousHeaders = hasSuspiciousHeaders(req);
+    const rateLimited = isRateLimited(ip);
+
+    if (!suspiciousUA && !rateLimited && suspiciousHeaders && isLikelyModernBrowser(req, userAgent)) {
+        req.botShield = { automationLikely: false, reason: 'modern-browser' };
+        return next();
+    }
+
+    if (suspiciousUA || suspiciousHeaders || rateLimited || req.botShield?.automationLikely) {
+        const reason = [
+            suspiciousUA ? 'ua-signature' : null,
+            suspiciousHeaders ? 'headers' : null,
+            rateLimited ? 'rate-limit' : null,
+            req.botShield?.reason || null
+        ].filter(Boolean).join(',');
+
+        console.warn(`Bot blocked (${reason}) from ${ip || 'unknown'} using UA: ${userAgent || 'N/A'}`);
+
+        return res.status(403).json({
+            message: 'Access denied',
+            reason: 'Automated traffic detected',
+            diagnostics: process.env.NODE_ENV === 'development' ? reason : undefined
+        });
+    }
+
+    req.botShield = { automationLikely: false, reason: 'passed-checks' };
     next();
 };
 
