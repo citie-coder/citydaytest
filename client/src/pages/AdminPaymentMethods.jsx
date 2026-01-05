@@ -16,7 +16,7 @@ const AdminPaymentMethods = () => {
 
     const fetchMethods = async () => {
         try {
-            const res = await axios.get('/api/admin/payment-methods', {
+            const res = await axios.get('http://api.cityday2.avaxverse.com/api/admin/payment-methods', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMethods(res.data);
@@ -32,7 +32,7 @@ const AdminPaymentMethods = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this method?')) return;
         try {
-            await axios.delete(`/api/admin/payment-methods/${id}`, {
+            await axios.delete(`http://api.cityday2.avaxverse.com/api/admin/payment-methods/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchMethods();
@@ -44,7 +44,7 @@ const AdminPaymentMethods = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/admin/payment-methods', newMethod, {
+            await axios.post('http://api.cityday2.avaxverse.com/api/admin/payment-methods', newMethod, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsModalOpen(false);

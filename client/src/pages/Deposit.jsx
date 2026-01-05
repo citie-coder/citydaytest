@@ -18,7 +18,7 @@ const Deposit = () => {
     useEffect(() => {
         const fetchMethods = async () => {
             try {
-                const res = await axios.get('/api/user/payment-methods', {
+                const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/payment-methods', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setMethods(res.data);
@@ -63,7 +63,7 @@ const Deposit = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post('/api/user/deposit', {
+            await axios.post('http://api.cityday2.avaxverse.com/api/user/deposit', {
                 amount: Number(amount),
                 methodId: selectedMethod._id,
                 depositDetails: { reference },

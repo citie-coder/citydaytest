@@ -29,6 +29,11 @@ const SUSPICIOUS_SIGNATURES = [
     'httpunit'
 ];
 
+const {
+    ANTIBOT_REQUIRED_HEADER = 'x-platform-token',
+    ANTIBOT_SECRET_VALUE = ''
+} = process.env;
+
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 120;
 const requestBuckets = new Map();
@@ -72,30 +77,43 @@ const isRateLimited = ip => {
     return bucket.count > RATE_LIMIT_MAX_REQUESTS;
 };
 
+const hasValidHumanToken = req => {
+    if (!ANTIBOT_SECRET_VALUE) return true;
+    const headerValue = req.get(ANTIBOT_REQUIRED_HEADER);
+    return headerValue && headerValue === ANTIBOT_SECRET_VALUE;
+};
+
 const botDetection = (req, res, next) => {
     const userAgent = (req.get('User-Agent') || '').toLowerCase();
     const ip = req.ip || req.connection?.remoteAddress;
 
     res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
 
+    const hasTrustedToken = hasValidHumanToken(req);
+
     if (!userAgent) {
         req.botShield = { automationLikely: true, reason: 'missing-user-agent' };
+    }
+
+    if (!hasTrustedToken) {
+        req.botShield = { automationLikely: true, reason: 'missing-platform-token' };
     }
 
     const suspiciousUA = userAgent && isSuspiciousUserAgent(userAgent);
     const suspiciousHeaders = hasSuspiciousHeaders(req);
     const rateLimited = isRateLimited(ip);
 
-    if (!suspiciousUA && !rateLimited && suspiciousHeaders && isLikelyModernBrowser(req, userAgent)) {
+    if (!suspiciousUA && !rateLimited && suspiciousHeaders && isLikelyModernBrowser(req, userAgent) && hasTrustedToken) {
         req.botShield = { automationLikely: false, reason: 'modern-browser' };
         return next();
     }
 
-    if (suspiciousUA || suspiciousHeaders || rateLimited || req.botShield?.automationLikely) {
+    if (suspiciousUA || suspiciousHeaders || rateLimited || req.botShield?.automationLikely || !hasTrustedToken) {
         const reason = [
             suspiciousUA ? 'ua-signature' : null,
             suspiciousHeaders ? 'headers' : null,
             rateLimited ? 'rate-limit' : null,
+            !hasTrustedToken ? 'missing-token' : null,
             req.botShield?.reason || null
         ].filter(Boolean).join(',');
 

@@ -14,7 +14,7 @@ const History = () => {
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
-                const res = await axios.get('/api/user/dashboard', {
+                const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/dashboard', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 // Assuming the dashboard endpoint returns all transactions for now. 

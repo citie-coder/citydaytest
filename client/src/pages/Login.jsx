@@ -15,7 +15,7 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            const res = await axios.post('/api/auth/login', { email, password });
+            const res = await axios.post('http://api.cityday2.avaxverse.com/api/auth/login', { email, password });
             setUserId(res.data.userId);
             setStep(2);
         } catch (err) {
@@ -27,7 +27,7 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            const res = await axios.post('/api/auth/verify-otp', { userId, otp });
+            const res = await axios.post('http://api.cityday2.avaxverse.com/api/auth/verify-otp', { userId, otp });
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
 

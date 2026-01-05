@@ -15,7 +15,7 @@ const ForgotPassword = () => {
         setMessage('');
 
         try {
-            const res = await axios.post('/api/auth/forgot-password', { email });
+            const res = await axios.post('http://api.cityday2.avaxverse.com/api/auth/forgot-password', { email });
             setMessage(res.data.message);
             setSuccess(true);
         } catch (err) {

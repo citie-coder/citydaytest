@@ -39,7 +39,7 @@ const ResetPassword = () => {
         }
 
         try {
-            const res = await axios.post('/api/auth/reset-password', {
+            const res = await axios.post('http://api.cityday2.avaxverse.com/api/auth/reset-password', {
                 token,
                 newPassword: password
             });

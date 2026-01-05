@@ -28,7 +28,7 @@ const SetPin = () => {
 
         setLoading(true);
         try {
-            await axios.post('/api/user/set-withdrawal-pin', { pin }, {
+            await axios.post('http://api.cityday2.avaxverse.com/api/user/set-withdrawal-pin', { pin }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Success - redirect to dashboard

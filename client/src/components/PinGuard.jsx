@@ -16,7 +16,7 @@ const PinGuard = ({ children }) => {
             }
 
             try {
-                const res = await axios.get('/api/user/dashboard', {
+                const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/dashboard', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

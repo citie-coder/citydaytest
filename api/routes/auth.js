@@ -6,11 +6,11 @@ const nodemailer = require('nodemailer');
 const { sendWelcomeEmail } = require('../utils/emailService');
 
 // Email Transporter (Configure with real credentials in .env)
-// Email Transporter (Configure with real credentials in .env)
+const emailPort = parseInt(process.env.EMAIL_PORT, 10) || 587;
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: emailPort,
+    secure: emailPort === 465,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -139,6 +139,7 @@ router.post('/login', async (req, res) => {
         if (process.env.EMAIL_USER) {
             await transporter.sendMail({
                 to: email,
+                from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
                 subject: 'Your Login OTP',
                 text: `Your OTP is ${otp}`
             });

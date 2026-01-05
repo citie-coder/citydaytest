@@ -33,7 +33,7 @@ const Profile = () => {
 
     const fetchUserData = async () => {
         try {
-            const res = await axios.get('/api/user/dashboard', {
+            const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/dashboard', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUser(res.data.user);
@@ -64,7 +64,7 @@ const Profile = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            const res = await axios.put('/api/user/profile', formData, {
+            const res = await axios.put('http://api.cityday2.avaxverse.com/api/user/profile', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUser(res.data.user);
@@ -107,7 +107,7 @@ const Profile = () => {
         setSaveLoading(true);
 
         try {
-            await axios.post('/api/user/set-withdrawal-pin', {
+            await axios.post('http://api.cityday2.avaxverse.com/api/user/set-withdrawal-pin', {
                 pin: pinData.newPin,
                 currentPin: pinData.currentPin || undefined
             }, {
