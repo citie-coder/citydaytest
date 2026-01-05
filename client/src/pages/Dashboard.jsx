@@ -28,7 +28,7 @@ const Dashboard = () => {
 
     const fetchData = async () => {
         try {
-            const res = await axios.get("http://api.cityday2.avaxverse.com/api/user/dashboard", {
+            const res = await axios.get("https://cityday-api.onrender.com/api/user/dashboard", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setUser(res.data.user);

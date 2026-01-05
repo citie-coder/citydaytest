@@ -25,7 +25,7 @@ const Register = () => {
         }
 
         try {
-            const response = await axios.post('http://api.cityday2.avaxverse.com/api/auth/register', {
+            const response = await axios.post('https://cityday-api.onrender.com/api/auth/register', {
                 firstName,
                 lastName,
                 email,

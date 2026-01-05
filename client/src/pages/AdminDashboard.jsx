@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import { Check, X, Plus, Settings, Users, TrendingDown, TrendingUp, Clock, Eye, XCircle, CheckCircle, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/Modal';
@@ -43,9 +43,9 @@ const AdminDashboard = () => {
     const fetchData = async () => {
         try {
             const [usersRes, withdrawalsRes, depositsRes] = await Promise.all([
-                axios.get('http://api.cityday2.avaxverse.com/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://api.cityday2.avaxverse.com/api/admin/withdrawals', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://api.cityday2.avaxverse.com/api/admin/deposits', { headers: { Authorization: `Bearer ${token}` } })
+                api.get('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
+                api.get('/api/admin/withdrawals', { headers: { Authorization: `Bearer ${token}` } }),
+                api.get('/api/admin/deposits', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setUsers(usersRes.data);
             setWithdrawals(withdrawalsRes.data);
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
                 w._id === transactionId ? { ...w, status: action === 'approve' ? 'approved' : 'declined' } : w
             ));
 
-            await axios.post('http://api.cityday2.avaxverse.com/api/admin/withdrawal-action', {
+            await api.post('/api/admin/withdrawal-action', {
                 transactionId,
                 action,
                 declineReason: action === 'decline' ? declineReason : undefined
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
                 d._id === transactionId ? { ...d, status: action === 'approve' ? 'approved' : 'declined' } : d
             ));
 
-            await axios.put(`http://api.cityday2.avaxverse.com/api/admin/deposits/${transactionId}/${action}`, {
+            await api.put(`/api/admin/deposits/${transactionId}/${action}`, {
                 declineReason: action === 'decline' ? declineReason : undefined
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -123,7 +123,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post('http://api.cityday2.avaxverse.com/api/admin/add-balance', { userId: selectedUser, amount }, {
+            await api.post('/api/admin/add-balance', { userId: selectedUser, amount }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsModalOpen(false);
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
                 updateData.password = editUserData.password;
             }
 
-            await axios.put(`http://api.cityday2.avaxverse.com/api/admin/users/${editUserData.id}`, updateData, {
+            await api.put(`/api/admin/users/${editUserData.id}`, updateData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsEditUserModalOpen(false);
@@ -186,13 +186,13 @@ const AdminDashboard = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await axios.post('http://api.cityday2.avaxverse.com/api/admin/add-balance', { userId: editUserData.id, amount }, {
+            await api.post('/api/admin/add-balance', { userId: editUserData.id, amount }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAmount('');
             fetchData();
             // Update the editUserData balance
-            const updatedUser = await axios.get('http://api.cityday2.avaxverse.com/api/admin/users', {
+            const updatedUser = await api.get('/api/admin/users', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const user = updatedUser.data.find(u => u._id === editUserData.id);
@@ -261,7 +261,7 @@ const AdminDashboard = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.put(`http://api.cityday2.avaxverse.com/api/admin/transactions/${editingTransaction.id}`, editingTransaction, {
+            const response = await api.put(`/api/admin/transactions/${editingTransaction.id}`, editingTransaction, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -300,7 +300,7 @@ const AdminDashboard = () => {
     const handleDeleteTransaction = async () => {
         setLoading(true);
         try {
-            const response = await axios.delete(`http://api.cityday2.avaxverse.com/api/admin/transactions/${deletingTransaction._id}`, {
+            const response = await api.delete(`/api/admin/transactions/${deletingTransaction._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

@@ -25,7 +25,7 @@ const Withdraw = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/dashboard', {
+                const res = await axios.get('https://cityday-api.onrender.com/api/user/dashboard', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setUser(res.data.user);
@@ -51,7 +51,7 @@ const Withdraw = () => {
         setLoading(true);
 
         try {
-            await axios.post('http://api.cityday2.avaxverse.com/api/user/withdraw', {
+            await axios.post('https://cityday-api.onrender.com/api/user/withdraw', {
                 amount,
                 pin: user.withdrawalPin ? pin : undefined,
                 recipientBankDetails: bankDetails
@@ -71,7 +71,7 @@ const Withdraw = () => {
             });
             // Refresh user data to show updated balance if applicable immediately,
             // though usually withdrawals are pending first.
-            const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/dashboard', {
+            const res = await axios.get('https://cityday-api.onrender.com/api/user/dashboard', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUser(res.data.user);

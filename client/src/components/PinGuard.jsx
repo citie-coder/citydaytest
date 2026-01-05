@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/api';
 
 const PinGuard = ({ children }) => {
     const [loading, setLoading] = useState(true);
@@ -16,7 +16,7 @@ const PinGuard = ({ children }) => {
             }
 
             try {
-                const res = await axios.get('http://api.cityday2.avaxverse.com/api/user/dashboard', {
+                const res = await api.get('/api/user/dashboard', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

@@ -8,7 +8,27 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+const defaultOrigins = ['http://localhost:5173'];
+const allowedOrigins = configuredOrigins.length ? configuredOrigins : defaultOrigins;
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!allowedOrigins.length || !origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`Blocked CORS request from origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

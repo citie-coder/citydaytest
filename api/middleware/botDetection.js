@@ -31,15 +31,39 @@ const SUSPICIOUS_SIGNATURES = [
 
 const {
     ANTIBOT_REQUIRED_HEADER = 'x-platform-token',
-    ANTIBOT_SECRET_VALUE = ''
+    ANTIBOT_SECRET_VALUE = '',
+    ANTIBOT_TRUSTED_IPS = '127.0.0.1,::1',
+    ANTIBOT_TRUSTED_AGENTS = 'nodemailer,node-fetch',
+    ANTIBOT_TRUSTED_PATHS = ''
 } = process.env;
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 120;
 const requestBuckets = new Map();
 
+const trustedIps = ANTIBOT_TRUSTED_IPS.split(',')
+    .map(ip => ip.trim())
+    .filter(Boolean);
+
+const trustedAgents = ANTIBOT_TRUSTED_AGENTS.split(',')
+    .map(agent => agent.trim().toLowerCase())
+    .filter(Boolean);
+
+const trustedPaths = ANTIBOT_TRUSTED_PATHS.split(',')
+    .map(path => path.trim())
+    .filter(Boolean);
+
 const isSuspiciousUserAgent = userAgent =>
     SUSPICIOUS_SIGNATURES.some(sig => userAgent.includes(sig));
+
+const isTrustedIp = ip =>
+    !!ip && trustedIps.some(trusted => trusted === ip);
+
+const isTrustedAgent = userAgent =>
+    !!userAgent && trustedAgents.some(agent => userAgent.includes(agent));
+
+const isTrustedPath = path =>
+    !!path && trustedPaths.some(trusted => path.startsWith(trusted));
 
 const hasSuspiciousHeaders = req => {
     const acceptLanguage = req.get('Accept-Language');
@@ -90,6 +114,11 @@ const botDetection = (req, res, next) => {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
 
     const hasTrustedToken = hasValidHumanToken(req);
+
+    if (isTrustedIp(ip) || isTrustedAgent(userAgent) || isTrustedPath(req.path)) {
+        req.botShield = { automationLikely: false, reason: 'trusted-source' };
+        return next();
+    }
 
     if (!userAgent) {
         req.botShield = { automationLikely: true, reason: 'missing-user-agent' };
