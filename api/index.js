@@ -36,10 +36,19 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const botDetection = require('./middleware/botDetection');
 app.use(botDetection);
 
+const { verifyEmailService } = require('./utils/emailService');
+
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('MongoDB Connected');
+
+    const emailReady = await verifyEmailService();
+    if (emailReady) {
+      console.log('SMTP Server is ready to take our messages');
+    } else {
+      console.warn('Email service not configured. Emails will not be sent.');
+    }
 
     // Seed Admin User
     if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {

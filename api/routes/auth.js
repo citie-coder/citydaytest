@@ -2,32 +2,7 @@ const router = require('express').Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-const { sendWelcomeEmail } = require('../utils/emailService');
-
-// Email Transporter (Configure with real credentials in .env)
-const emailPort = parseInt(process.env.EMAIL_PORT, 10) || 587;
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: emailPort,
-    secure: emailPort === 465,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
-
-console.log('Email User:', process.env.EMAIL_USER);
-console.log('Email Pass Length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 'Not Set');
-
-// Verify connection configuration
-transporter.verify(function (error, success) {
-    if (error) {
-        console.log('SMTP Connection Error:', error);
-    } else {
-        console.log('SMTP Server is ready to take our messages');
-    }
-});
+const { sendWelcomeEmail, sendOtpEmail } = require('../utils/emailService');
 
 // Helper function to generate unique account number
 const generateAccountNumber = async () => {
@@ -135,15 +110,14 @@ router.post('/login', async (req, res) => {
         user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
         await user.save();
 
-        // Send OTP Email
-        if (process.env.EMAIL_USER) {
-            await transporter.sendMail({
-                to: email,
-                from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-                subject: 'Your Login OTP',
-                text: `Your OTP is ${otp}`
-            });
-            console.log(`OTP sent to ${email}`);
+        // Send OTP Email via Resend
+        if (process.env.RESEND_API_KEY) {
+            const result = await sendOtpEmail(email, otp);
+            if (!result.success) {
+                console.warn('Failed to send OTP email via Resend:', result.error);
+            } else {
+                console.log(`OTP sent to ${email}`);
+            }
         } else {
             console.log(`[DEV MODE] OTP for ${email}: ${otp}`);
         }

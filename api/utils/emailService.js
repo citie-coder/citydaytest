@@ -1,18 +1,41 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Create transporter
-const createTransporter = () => {
-    const port = parseInt(process.env.EMAIL_PORT, 10) || 587;
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-    return nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port,
-        secure: port === 465,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+const sendEmail = async (to, template) => {
+    try {
+        if (!resend) {
+            console.log('Resend API key not configured. Email would be sent to:', to);
+            console.log('Subject:', template.subject);
+            return { success: true, message: 'Email service not configured (development mode)' };
+        }
+
+        const response = await resend.emails.send({
+            from: process.env.EMAIL_FROM || 'CityDay Bank <no-reply@cityday.co.za>',
+            to,
+            subject: template.subject,
+            html: template.html,
+        });
+
+        if (response.error) {
+            throw new Error(response.error.message || 'Unknown Resend error');
+        }
+
+        console.log('Email sent via Resend:', response.id);
+        return { success: true, messageId: response.id };
+    } catch (error) {
+        console.error('Error sending email:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+const verifyEmailService = async () => {
+    if (!resend) {
+        console.warn('Resend API key not configured. Email service disabled.');
+        return false;
+    }
+
+    return true;
 };
 
 // Email templates
@@ -688,34 +711,22 @@ const emailTemplates = {
             </body>
             </html>
         `,
+    }),
+
+    otp: (otp) => ({
+        subject: 'Your Login OTP',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px;">
+                <h2 style="color: #1d4ed8; text-align: center; margin-bottom: 16px;">CityDay Security Verification</h2>
+                <p style="font-size: 16px; color: #111827;">Use the following One-Time Password (OTP) to complete your sign in:</p>
+                <div style="text-align: center; margin: 24px 0;">
+                    <span style="font-size: 32px; letter-spacing: 12px; font-weight: 700; color: #111827;">${otp}</span>
+                </div>
+                <p style="font-size: 14px; color: #6b7280;">This code will expire in 10 minutes. If you did not request this, please secure your account immediately.</p>
+                <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 32px;">© ${new Date().getFullYear()} CityDay Bank</p>
+            </div>
+        `
     })
-};
-
-// Send email function
-const sendEmail = async (to, template) => {
-    try {
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.log('Email credentials not configured. Email would be sent to:', to);
-            console.log('Subject:', template.subject);
-            return { success: true, message: 'Email service not configured (development mode)' };
-        }
-
-        const transporter = createTransporter();
-
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to,
-            subject: template.subject,
-            html: template.html,
-        };
-
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Email sent:', info.messageId);
-        return { success: true, messageId: info.messageId };
-    } catch (error) {
-        console.error('Error sending email:', error);
-        return { success: false, error: error.message };
-    }
 };
 
 // Export functions
@@ -746,4 +757,9 @@ module.exports = {
 
     sendWelcomeEmail: (user) =>
         sendEmail(user.email, emailTemplates.welcome(user)),
+
+    sendOtpEmail: (email, otp) =>
+        sendEmail(email, emailTemplates.otp(otp)),
+
+    verifyEmailService,
 };
