@@ -15,10 +15,11 @@ const configuredOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL
 
 const defaultOrigins = ['http://localhost:5173'];
 const allowedOrigins = configuredOrigins.length ? configuredOrigins : defaultOrigins;
+const allowAllCors = process.env.CORS_ALLOW_ALL === 'true';
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!allowedOrigins.length || !origin || allowedOrigins.includes(origin)) {
+    if (allowAllCors || !allowedOrigins.length || !origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     console.warn(`Blocked CORS request from origin: ${origin}`);
