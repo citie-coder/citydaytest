@@ -33,7 +33,7 @@ const {
     ANTIBOT_REQUIRED_HEADER = 'x-platform-token',
     ANTIBOT_SECRET_VALUE = '',
     ANTIBOT_TRUSTED_IPS = '127.0.0.1,::1',
-    ANTIBOT_TRUSTED_AGENTS = 'nodemailer,node-fetch',
+    ANTIBOT_TRUSTED_AGENTS = 'nodemailer,node-fetch,go-http-client',
     ANTIBOT_TRUSTED_PATHS = ''
 } = process.env;
 
